@@ -26,11 +26,12 @@ def getRoute(start_lat:str, start_lng:str, dest_lat:str, dest_lng:str):
     dest = Cords((float(dest_lat), float(dest_lng)))
     return {"route": Maps.CreateRoute(start, dest)}
 
-@app.get('/closest/latitude={start_lat}&longitude={start_lng}')
+@app.get('/closest/latitude={lat}&longitude={lng}')
 def getClosest(lat: str, lng:str):
     try:
         cords = Cords((float(lat), float(lng)))
-        return getClosestStation(cords)
+        result = getClosestStation(cords)
+        return{"id": result[0], "name": result[1], "cords": {"lat": result[2], "lng": result[3]}}
     except:  # noqa: E722
         return 500
     
