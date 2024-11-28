@@ -1,7 +1,8 @@
-from dep.keypad import Keypad
+from dep.keypad import Keypad,rpi_gpio
 from dep.db import DB
 from dep.lcd import lcd
 from time import sleep
+from unidecode import unidecode
 
 lcd = lcd()
 db = DB()
@@ -57,9 +58,10 @@ if __name__ == "__main__":
                 print(stopID)
                 stop = db.getStopName(stopID)
                 print(stop)
-                lcd.setNext(stop,True)
+                lcd.setNext(unidecode(stop),True)
                 if keypad.getKey()=="*":
                     break
                 stopCount += 1
     except KeyboardInterrupt:
+        rpi_gpio.GPIO.cleanup()
         exit(0)
