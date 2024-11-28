@@ -1,0 +1,16 @@
+[Unit]
+Description=jizdni rady service
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=pi
+WorkingDirectory=/opt/hackathon
+VIRTUAL_ENV = /opt/hackathon/.venv
+Environment=PATH=$VIRTUAL_ENV/bin:$PATH
+ExecStart=/opt/hackathon/.venv/bin/python main.py
+
+[Install]
+WantedBy=multi-user.target

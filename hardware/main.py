@@ -1,75 +1,67 @@
-# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
-# SPDX-License-Identifier: MIT
+from dep.keypad import Keypad,rpi_gpio
+from dep.db import DB
+from dep.lcd import lcd
+from time import sleep
+from unidecode import unidecode
 
-"""
-This demo will fill the screen with white, draw a black box on top
-and then print Hello World! in the center of the display
+lcd = lcd()
+db = DB()
+keypad = Keypad()
 
-This example is for use on (Linux) computers that are using CPython with
-Adafruit Blinka to support CircuitPython libraries. CircuitPython does
-not support PIL/pillow (python imaging library)!
-"""
+def enterRoute():
+    lcd.clear()
+    lcd.display("zadej linku:",1,"center")
+    user= ""
+    while True:
+        lcd.display(user, 2, "center")
+        key = keypad.getKey()
+        print(key)
+        if key =="C":
+            user+="R"
+            continue
+        if key =="D":
+            user+="S"
+            continue
+        if key == "*":
+            user = ""
+            lcd.display("        ", 2, "center")
+            continue
+        if key == "#":
+            break
+        user += str(key)
+    return user
 
-import board
-import digitalio
-from PIL import Image, ImageDraw, ImageFont
-import adafruit_ssd1306
+def getLineAndDir(line):
+    dir = 0 if line[-1]=="A" else 1
+    return line[:-1],dir
 
-# Define the Reset Pin
-oled_reset = digitalio.DigitalInOut(board.D4)
-
-# Change these
-# to the right size for your display!
-WIDTH = 128
-HEIGHT = 32  # Change to 64 if needed
-BORDER = 5
-
-# Use for I2C.
-i2c = board.I2C()  # uses board.SCL and board.SDA
-# i2c = board.STEMMA_I2C()  # For using the built-in STEMMA QT connector on a microcontroller
-oled = adafruit_ssd1306.SSD1306_I2C(WIDTH, HEIGHT, i2c, addr=0x3C, reset=oled_reset)
-
-# Use for SPI
-# spi = board.SPI()
-# oled_cs = digitalio.DigitalInOut(board.D5)
-# oled_dc = digitalio.DigitalInOut(board.D6)
-# oled = adafruit_ssd1306.SSD1306_SPI(WIDTH, HEIGHT, spi, oled_dc, oled_reset, oled_cs)
-
-# Clear display.
-oled.fill(0)
-oled.show()
-
-# Create blank image for drawing.
-# Make sure to create image with mode '1' for 1-bit color.
-image = Image.new("1", (oled.width, oled.height))
-
-# Get drawing object to draw on image.
-draw = ImageDraw.Draw(image)
-
-# Draw a white background
-draw.rectangle((0, 0, oled.width, oled.height), outline=255, fill=255)
-
-# Draw a smaller inner rectangle
-draw.rectangle(
-    (BORDER, BORDER, oled.width - BORDER - 1, oled.height - BORDER - 1),
-    outline=0,
-    fill=0,
-)
-
-# Load default font.
-font = ImageFont.load_default()
-
-# Draw Some Text
-text = "Hello World!"
-bbox = font.getbbox(text)
-(font_width, font_height) = bbox[2] - bbox[0], bbox[3] - bbox[1]
-draw.text(
-    (oled.width // 2 - font_width // 2, oled.height // 2 - font_height // 2),
-    text,
-    font=font,
-    fill=255,
-)
-
-# Display image
-oled.image(image)
-oled.show()
+if __name__ == "__main__":
+    try:
+        while True:
+            linka = enterRoute()
+            try:
+                if not (linka[-1] in ["A","B"]):
+                    continue
+            except IndexError:
+                continue
+            line , direction = getLineAndDir(linka)
+            print(line,direction)
+            lineID = db.getLineID(line)
+            if not lineID:
+                continue
+            lcd.display("linka "+linka,1,"center")
+            stopCount = 1
+            while True:
+                stopID = db.getStopFromLine(lineID,direction,stopCount)
+                if(not stopID):
+                    break
+                print(stopID)
+                stop = db.getStopName(stopID)
+                print(stop)
+                lcd.setNext(unidecode(stop),True)
+                if keypad.getKey()=="*":
+                    break
+                stopCount += 1
+    except KeyboardInterrupt:
+        rpi_gpio.GPIO.cleanup()
+        exit(0)
