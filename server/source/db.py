@@ -16,7 +16,7 @@ def getClosestStation(cords: Cords):
     connection = getConnection()
     with connection:
         with connection.cursor() as cursor:
-            sql = "SELECT id, name, latitude, longitude FROM hackathon.stops ORDER BY (latitude - %s) * (latitude - %s) + (longitude - %s) * (longitude - %s) LIMIT 1;"
+            sql = "SELECT id, name, latitude, longitude FROM hackathon.stops ORDER BY (latitude - %s) * (latitude - %s) + (longitude - %s) * (longitude - %s) LIMIT 3;"
             cursor.execute(sql, (cords.lat, cords.lat, cords.lng, cords.lng))
-            result = cursor.fetchone()
+            result = cursor.fetchall()
             return result
