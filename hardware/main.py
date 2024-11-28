@@ -12,8 +12,15 @@ def enterRoute():
     lcd.display("zadej linku:",1,"center")
     user= ""
     while True:
+        lcd.display(user, 2, "center")
         key = keypad.getKey()
         print(key)
+        if key =="C":
+            user+="R"
+            continue
+        if key =="D":
+            user+="S"
+            continue
         if key == "*":
             user = ""
             lcd.display("        ", 2, "center")
@@ -21,11 +28,38 @@ def enterRoute():
         if key == "#":
             break
         user += str(key)
-        lcd.display(user,2,"center")
     return user
 
+def getLineAndDir(line):
+    dir = 0 if line[-1]=="A" else 1
+    return line[:-1],dir
+
 if __name__ == "__main__":
-    user = enterRoute()
-    lcd.display("linka "+user,1,"center")
-    lcd.setNext("chodov",True)
-    sleep(500)
+    try:
+        while True:
+            linka = enterRoute()
+            try:
+                if not (linka[-1] in ["A","B"]):
+                    continue
+            except IndexError:
+                continue
+            line , direction = getLineAndDir(linka)
+            print(line,direction)
+            lineID = db.getLineID(line)
+            if not lineID:
+                continue
+            lcd.display("linka "+linka,1,"center")
+            stopCount = 1
+            while True:
+                stopID = db.getStopFromLine(lineID,direction,stopCount)
+                if(not stopID):
+                    break
+                print(stopID)
+                stop = db.getStopName(stopID)
+                print(stop)
+                lcd.setNext(stop,True)
+                if keypad.getKey()=="*":
+                    break
+                stopCount += 1
+    except KeyboardInterrupt:
+        exit(0)

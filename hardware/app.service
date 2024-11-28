@@ -1,0 +1,13 @@
+[Unit]
+Description=jizdni rady service
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=pi
+ExecStart=/opt/hackathon/.venv/bin/python3 /opt/hackathon/main.py
+
+[Install]
+WantedBy=multi-user.target

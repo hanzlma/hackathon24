@@ -14,8 +14,10 @@ class lcd:
     def setNext(self,stationName,stop):
         self.display(" pristi zastavka:",2,'center')
         self.display(stationName,3,'center')
-
-        self.display(("zastavime" if stop else "nezastavime"),4,'center')
+        if stop:
+            self.display("zastavime",4,'center')
+        else:
+            self.display("nezastavime",4,'center')
 
     def clear(self):
         self.lcd.clear()
