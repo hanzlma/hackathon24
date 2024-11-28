@@ -1,0 +1,5 @@
+googlemaps
+fastapi
+uvicorn
+PyMySQL
+cloud-sql-python-connector
