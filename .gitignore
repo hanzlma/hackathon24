@@ -1,2 +1,6 @@
 .idea
 /hardware/.venv
+/server/.venv
+/server/__pycache__
+/server/source/__pycache__
+/server/source/config.py
