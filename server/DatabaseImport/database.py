@@ -6,6 +6,7 @@ import atexit
 
 folder_path = './data/'
 zip_url = 'https://data.pid.cz/PID_GTFS.zip'
+json_url = 'https://data.pid.cz/stops/json/stops.json'
 
 stops_path = folder_path + 'stops.txt'
 routes_path = folder_path + 'routes.txt'
@@ -40,7 +41,7 @@ def clean_up():
 
 def get_stops():
     try:
-        data = pd.read_csv(stops_path, usecols=['stop_id', 'stop_name', 'stop_lat', 'stop_lon', 'zone_id', 'wheelchair_boarding', 'platform_code'])
+        data = pd.read_csv(stops_path, usecols=['stop_id', 'stop_name', 'stop_lat', 'stop_lon', 'zone_id', 'wheelchair_boarding', 'platform_code', 'asw_node_id'])
         return data
     except FileNotFoundError:
         print(f"The file at {stops_path} was not found.")
@@ -54,7 +55,7 @@ def get_routes():
         data = pd.read_csv(routes_path, usecols=['route_id', 'route_short_name', 'route_type', 'is_night'])
         return data
     except FileNotFoundError:
-        print(f"The file at {stops_path} was not found.")
+        print(f"The file at {routes_path} was not found.")
         exit()
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -65,7 +66,7 @@ def get_route_stops():
         data = pd.read_csv(route_stops_path, usecols=['route_id', 'stop_id', 'direction_id', 'stop_sequence'])
         return data
     except FileNotFoundError:
-        print(f"The file at {stops_path} was not found.")
+        print(f"The file at {route_stops_path} was not found.")
         exit()
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -76,7 +77,7 @@ def get_stop_times():
         data = pd.read_csv(stop_times_path, usecols=['trip_id', 'arrival_time', 'departure_time', 'stop_id', 'stop_sequence', 'pickup_type', 'drop_off_type', 'trip_operation_type', 'bikes_allowed'])
         return data
     except FileNotFoundError:
-        print(f"The file at {stops_path} was not found.")
+        print(f"The file at {stop_times_path} was not found.")
         exit()
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -87,7 +88,7 @@ def get_trips():
         data = pd.read_csv(trips_path, usecols=['trip_id', 'route_id', 'block_id', 'shape_id'])
         return data
     except FileNotFoundError:
-        print(f"The file at {stops_path} was not found.")
+        print(f"The file at {trips_path} was not found.")
         exit()
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -98,7 +99,7 @@ def get_transfers():
         data = pd.read_csv(transfers_path, usecols=['from_stop_id', 'to_stop_id', 'transfer_type', 'min_transfer_time', 'max_waiting_time', 'from_trip_id', 'to_trip_id'])
         return data
     except FileNotFoundError:
-        print(f"The file at {stops_path} was not found.")
+        print(f"The file at {transfers_path} was not found.")
         exit()
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -120,6 +121,7 @@ def create_tables():
                        );''')
     cursor_obj.execute('''CREATE TABLE IF NOT EXISTS stops (
                         id VARCHAR(255) PRIMARY KEY,
+                        aws_id VARCHAR(255),
                         name VARCHAR(255),
                         latitude DOUBLE,
                         longitude DOUBLE,
@@ -163,13 +165,18 @@ def create_tables():
                         to_trip_id VARCHAR(255),
                         PRIMARY KEY (from_stop_id, from_trip_id, to_trip_id)
                        );''')
+    cursor_obj.execute('''CREATE TABLE IF NOT EXISTS stop_groups(
+                        uniqueName VARCHAR(255),
+                        stop_id VARCHAR(255),
+                        PRIMARY KEY(uniqueName, stop_id)
+                       );''')
 
 def import_stops(dataframe):
     dataframe.fillna('', inplace=True)
     print('Importing stops...')
     cursor_obj.execute('DELETE FROM stops')
-    cursor_obj.executemany('''INSERT INTO stops (id, name, latitude, longitude, zone_id, wheelchair, platform_code)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)''',
+    cursor_obj.executemany('''INSERT INTO stops (id, name, latitude, longitude, zone_id, wheelchair, platform_code, aws_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''',
                         dataframe.values.tolist())
     db.commit()
 
@@ -225,6 +232,19 @@ def import_transfers(dataframe):
                                 dataframe.values.tolist())
     db.commit()
 
+def import_stop_groups():
+    print('Importing stop groups...')
+    cursor_obj.execute('DELETE FROM stop_groups')
+    json = pd.read_json(json_url)
+    group_data = []
+    for grop in json['stopGroups']:
+        uniqueName = grop['uniqueName']
+        for stop in grop['stops']:
+            group_data.append((uniqueName, stop['id']))
+    cursor_obj.executemany('INSERT INTO stop_groups (uniqueName, stop_id) VALUES (%s, %s)', group_data)
+    db.commit()
+
+
 if __name__ == '__main__':
     atexit.register(clean_up)
 
@@ -250,3 +270,5 @@ if __name__ == '__main__':
     import_stop_times(dataframes[stop_times_index])
     import_trips(dataframes[trips_index])
     import_transfers(dataframes[transfers_index])
+
+    import_stop_groups()
