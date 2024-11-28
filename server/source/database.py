@@ -39,7 +39,7 @@ def clean_up():
 
 def get_stops():
     try:
-        data = pd.read_csv(stops_path, usecols=['stop_id', 'stop_name', 'stop_lat', 'stop_lon', 'zone_id', 'wheelchair_boarding', 'platform_code', 'asw_node_id'])
+        data = pd.read_csv(stops_path, usecols=['stop_id', 'stop_name', 'stop_lat', 'stop_lon', 'zone_id', 'wheelchair_boarding', 'platform_code', 'asw_node_id', 'asw_stop_id'])
         return data
     except FileNotFoundError:
         print(f"The file at {stops_path} was not found.")
@@ -120,6 +120,7 @@ def create_tables():
     cursor_obj.execute('''CREATE TABLE IF NOT EXISTS stops (
                         id VARCHAR(255) PRIMARY KEY,
                         aws_id VARCHAR(255),
+                        aws_part_id VARCHAR(255),
                         name VARCHAR(255),
                         latitude DOUBLE,
                         longitude DOUBLE,
@@ -168,13 +169,18 @@ def create_tables():
                         stop_id VARCHAR(255),
                         PRIMARY KEY(uniqueName, stop_id)
                        );''')
+    cursor_obj.execute('''CREATE TABLE IF NOT EXISTS nodes(
+                        node_id INTEGER,
+                        stop_ids TEXT,
+                        PRIMARY KEY(node_id)
+                        );''')
 
 def import_stops(dataframe):
     dataframe.fillna('', inplace=True)
     print('Importing stops...')
     cursor_obj.execute('DELETE FROM stops')
-    cursor_obj.executemany('''INSERT INTO stops (id, name, latitude, longitude, zone_id, wheelchair, platform_code, aws_id)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''',
+    cursor_obj.executemany('''INSERT INTO stops (id, name, latitude, longitude, zone_id, wheelchair, platform_code, aws_id, aws_part_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)''',
                         dataframe.values.tolist())
     db.commit()
 
@@ -242,6 +248,35 @@ def import_stop_groups():
     cursor_obj.executemany('INSERT INTO stop_groups (uniqueName, stop_id) VALUES (%s, %s)', group_data)
     db.commit()
 
+def get_valid_groups():
+    print("Getting valid groups...")
+    cursor_obj.execute("SELECT uniqueName, id FROM hackathon.stops INNER JOIN hackathon.stop_groups ON stop_id = CONCAT(LEFT(aws_id, LOCATE('.', aws_id) - 1), '/', LEFT(aws_part_id, LOCATE('.', aws_part_id) - 1)) WHERE zone_id IN ('P', 'B', '0');")
+    result = cursor_obj.fetchall()
+    return result
+
+def create_nodes():
+    print('Creating nodes...')
+    cursor_obj.execute('DELETE FROM nodes')
+    dict = {}
+    row_counter = {}
+    result = get_valid_groups()
+    counter = 0
+    for row in result:
+        if row[0] not in row_counter:
+            dict[counter] = []
+            row_counter[row[0]] = counter
+            counter += 1
+        dict[row_counter[row[0]]].append(row[1])
+    node_data = []
+    for group_name, aws_ids in dict.items():
+        aws_ids_data = ""
+        for aws_id in aws_ids:
+            aws_ids_data += aws_id + ","
+        node_data.append((group_name, aws_ids_data))
+    cursor_obj.executemany('INSERT INTO nodes (node_id, stop_ids) VALUES (%s, %s)', node_data)
+    db.commit()
+    
+
 def update_database():
     atexit.register(clean_up)
 
@@ -255,8 +290,10 @@ def update_database():
 
     # Load the extracted files
     dataframes = get_csvs(file_paths)
-
+    
+    global db
     db = mysql.connector.connect(**config)
+    global cursor_obj
     cursor_obj = db.cursor()
 
     # Import to database
@@ -270,5 +307,7 @@ def update_database():
     import_stop_times(dataframes[stop_times_index])
     import_trips(dataframes[trips_index])
     import_transfers(dataframes[transfers_index])
+    
+    import_stop_groups()
 
-    import_stop_groups()    
+    create_nodes()
