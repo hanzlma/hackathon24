@@ -19,8 +19,6 @@ stops_index = 0; routes_index = 1; route_stops_index = 2; stop_times_index = 3; 
 
 file_paths = [stops_path, routes_path, route_stops_path, stop_times_path, trips_path, transfers_path]
 
-sqlite_path = '../db.sqlite3'
-
 config = {
     'user': 'root',
     'password': 'hackathon',
@@ -244,9 +242,11 @@ def import_stop_groups():
     cursor_obj.executemany('INSERT INTO stop_groups (uniqueName, stop_id) VALUES (%s, %s)', group_data)
     db.commit()
 
-
-if __name__ == '__main__':
+def update_database():
     atexit.register(clean_up)
+
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
 
     # Download the zip file
     r = requests.get(zip_url)
@@ -271,4 +271,4 @@ if __name__ == '__main__':
     import_trips(dataframes[trips_index])
     import_transfers(dataframes[transfers_index])
 
-    import_stop_groups()
+    import_stop_groups()    
