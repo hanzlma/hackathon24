@@ -1,3 +1,4 @@
 .idea
 /hardware/.venv
 /hardware/db.sqlite3-journal
+/hardware/db.sqlite3
