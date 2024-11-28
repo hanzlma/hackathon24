@@ -16,14 +16,19 @@ struct SearchView: View {
        
     var body: some View {
         
+        ZStack {
             if isSearched {
                 SearchResultsView(isSearched: $isSearched)
                     .environmentObject(app)
+                    .transition(.move(edge: .trailing)) //.bottom
             } else {
                 SearchFiltersView(isSearched: $isSearched)
                     .environmentObject(app)
-                    
+                    .transition(.move(edge: .leading)) // .top
             }
+        }
+        .animation(.easeInOut(duration: 0.3), value: isSearched) // Smooth animation
+
         
     }
     

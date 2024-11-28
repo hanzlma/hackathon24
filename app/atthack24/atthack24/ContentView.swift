@@ -13,16 +13,27 @@ struct ContentView: View {
     
     var body: some View {
         
-        if app.activeSlide == 0{
-            SearchView()
-            .environmentObject(app)
-            .onAppear {
-                //app.test = 1
-            }
-        }else{
-            RouteActiveView()
+        
+        ZStack {
+
+            if app.activeSlide == 0{
+                SearchView()
                 .environmentObject(app)
+                .transition(.move(edge: .top))
+                .onAppear {
+                    //app.test = 1
+                }
+            }else{
+                RouteActiveView()
+                    .environmentObject(app)
+                    .transition(.move(edge: .bottom)) // .top
+            }
+            
         }
+        .animation(.easeInOut(duration: 0.3), value: app.activeSlide == 0) // Smooth animation
+
+        
+        
         
     }
 }
