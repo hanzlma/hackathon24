@@ -20,3 +20,12 @@ def getClosestStation(cords: Cords):
             cursor.execute(sql, (cords.lat, cords.lat, cords.lng, cords.lng))
             result = cursor.fetchall()
             return result
+        
+def getPath(start: str, end:str):
+    connection = getConnection()
+    with connection:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM routes WHERE start_id = %s AND end_id = %s"
+            cursor.execute(sql, (start['node_id'], end['node_id']))
+            result = cursor.fetchall()
+            return result

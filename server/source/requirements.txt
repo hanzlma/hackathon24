@@ -3,3 +3,5 @@ fastapi
 uvicorn
 PyMySQL
 cloud-sql-python-connector
+mysql.connector
+pandas

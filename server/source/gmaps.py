@@ -1,5 +1,6 @@
 import googlemaps
-
+import requests
+import time
 from config import gmapsapikey #fill
 
 gmaps = googlemaps.Client(gmapsapikey)
@@ -19,5 +20,13 @@ class Maps:
         response = gmaps.geocode(addres)[0]
         return Cords((response['geometry']['location']['lat'], response['geometry']['location']['lng']))
 
-    def CreateRoute(start:Cords, dest:Cords):
-        return f"https://www.google.com/maps/dir/?api=1&origin={start.lat},{start.lng}&destination={dest.lat},{dest.lng}&travelmode=walking"
+    def CreateRoute(start:Cords, dest:Cords, travelmode: str):
+        return f"https://www.google.com/maps/dir/?api=1&origin={start.lat},{start.lng}&destination={dest.lat},{dest.lng}&travelmode={travelmode}"
+
+    def GetRoute(start:Cords, dest:Cords, departure_time: str):
+        t = time.mktime(time.strptime(departure_time, "%H:%M"))
+        res = requests.get(f"https://maps.googleapis.com/maps/api/directions/json?destination={dest.lat},{dest.lng}&origin={start.lat},{start.lng}&mode=transit&departure_time={t}&key={gmapsapikey}")
+        routes = []
+        [routes.append(x) if 'transit_details' in x.keys() else None for x in res.json()['routes'][0]['legs'][0]['steps']]
+        return routes
+

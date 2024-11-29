@@ -1,5 +1,7 @@
 from fastapi import FastAPI
+from typing import List
 from gmaps import Maps, Cords
+from user_route import UserRouteModel
 from db import getClosestStation
 app = FastAPI()
 
@@ -24,7 +26,7 @@ def getStation(location:str):
 def getRoute(start_lat:str, start_lng:str, dest_lat:str, dest_lng:str):
     start = Cords((float(start_lat), float(start_lng)))
     dest = Cords((float(dest_lat), float(dest_lng)))
-    return {"route": Maps.CreateRoute(start, dest)}
+    return {"route": Maps.CreateRoute(start, dest, 'walking')}
 
 @app.get('/closest/start_latitude={lat}&start_longitude={lng}')
 def getClosest(lat: str, lng:str):
@@ -52,6 +54,30 @@ def getRoutesStartNoCords(time: str, start: str, dest:str):
         start_result = getClosestStation(Maps.ConvertAddressToCords(start))
         dest_result = getClosestStation(Maps.ConvertAddressToCords(dest))
         
+        return Maps.CreateRoute(Cords((start_result[2], start_result[3])), Cords((dest_result[2], dest_result[3])), 'transit')
+        
         #IMPLEMENT SPF ALGORITHM
+        
+        
     except:  # noqa: E722
         return 500
+    
+@app.post('/user/route')
+def postUserRoute(routes: List[UserRouteModel]):
+    """
+    input json structure:{
+        "trips:"[
+            {
+                "trip_id": str,
+                "start_stop_id": str,
+                "end_stop_id": str,
+            },
+            ...
+        ]
+    }
+    """
+    pass
+
+@app.get('/trip/nextstopsstate/trip={trip}&curr_stop={stop}')
+def getNextStopsState(trip: str, stop: str):
+    pass
