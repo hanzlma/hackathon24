@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from typing import List
 from gmaps import Maps, Cords
 from user_route import UserRouteModel
-from db import getClosestStation, parse_json, setUserTrip
+from db import getClosestStation, parse_json, setUserTrip, nextStopsState
 
 app = FastAPI()
 
@@ -73,9 +73,10 @@ def postUserRoute(routes: List[UserRouteModel]):
     }
     """
     setUserTrip(routes)
+    return {"success": True}
 
 
 @app.get('/trip/nextstopsstate/trip={trip}&curr_stop={stop}')
-def getNextStopsState(trip: str, stop: str):
-    pass
+def getNextStopsState(trip: str, stop: str, seq: str):
+    return nextStopsState(trip, stop, int(seq))
 
