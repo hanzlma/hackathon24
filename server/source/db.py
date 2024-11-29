@@ -54,14 +54,16 @@ def setUserTrip(routes: List[UserRouteModel]):
         with connection.cursor() as cursor:
             for route in routes:
                 sql = "SELECT id FROM stops WHERE latitude IN (%s, %s) AND longitude IN (%s, %s)"
-                cursor.execute(sql, (route.start_lat, route.dest_lat, route.start_lng, route.dest_lng))
+                start = getClosestStation(Cords((route.start_lat, route.start_lng)))[0]
+                dest = getClosestStation(Cords((route.dest_lat, route.dest_lng)))[0]
+                cursor.execute(sql, (start[2], dest[2], start[3], dest[3]))
                 stops = cursor.fetchall()
-                start_stop = stops[0]
-                dest_stop = stops[1]
+                start_stop = stops[0][0]
+                dest_stop = stops[1][0]
                 sql = "SELECT * FROM hackathon.trips INNER JOIN (SELECT id FROM hackathon.routes WHERE name = %s) AS s ON s.id = route_id;"
                 cursor.execute(sql, route.line)
-                trip_id = cursor.fetchall()[0]
-                date = datetime.now()
+                trip_id = cursor.fetchall()[0][0]
+                date = datetime.now().date().isoformat()
                 sql = "INSERT INTO user_trips (trip_id, start_id, dest_id, date) VALUES (%s, %s, %s, %s)"
                 cursor.execute(sql, (trip_id, start_stop, dest_stop, date))
-                
+                connection.commit()
