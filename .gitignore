@@ -7,3 +7,4 @@
 /hardware/db.sqlite3-journal
 /hardware/db.sqlite3
 .DS_Store
+app/.DS_Store
