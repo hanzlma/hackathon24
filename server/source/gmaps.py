@@ -1,8 +1,7 @@
 import googlemaps
 import requests
 import time
-#from config import gmapsapikey #fill
-gmapsapikey = 'AIzaSyBYFgfjnBJ1iPgmWEW5XiJDxbGEyfl_jxQ'
+from config import gmapsapikey #fill
 
 gmaps = googlemaps.Client(gmapsapikey)
 
