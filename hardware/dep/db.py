@@ -2,7 +2,7 @@ import sqlite3
 
 class DB:
     def __init__(self):
-        self.conn = sqlite3.connect('../db.sqlite3')
+        self.conn = sqlite3.connect('db.sqlite3')
     def __del__(self):
         self.conn.close()
     def checkLine(self,line):
@@ -28,8 +28,9 @@ class DB:
         return toRet
 
     def getStopName(self,stopID):
-        res = self.conn.execute(f"select * from main.stops where id == ?",(stopID,))
-        return res.fetchone()[2]
+        res = self.conn.execute(f"select name,zone_id from main.stops where id == ?",(stopID,))
+        a = res.fetchone()
+        return a[0],a[1]
 if __name__ == "__main__":
     db = DB()
     print(db.checkLine(1))
