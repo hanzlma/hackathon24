@@ -3,16 +3,16 @@ import SwiftUI
 struct RouteDetailView: View {
     @Binding var routes: [Route]
     @EnvironmentObject var app: AppData
-
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-
+                
                 Text("\(app.startPlace) - \(app.goalPlace)")
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
-
+                
                 ForEach(routes.indices, id: \.self) { index in
                     let route = routes[index]
                     VStack(alignment: .leading, spacing: 10) {
@@ -20,40 +20,36 @@ struct RouteDetailView: View {
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundStyle(Color.primaryColor)
-
+                        
                         VStack(alignment: .leading, spacing: 10) {
                             if index == 0 {
-                                // First route
                                 
                                 RouteDetailItem(time: route.time1, station: route.station1, type: 1)
                             } else {
-                                // Intermediate or last routes
                                 RouteDetailItem(time: route.time1, station: route.station1, type: 2)
                                 
                             }
                             
                             if index == routes.count - 1 {
-                                // Last route
                                 RouteDetailItem(time: route.time2, station: route.station2, type: 3)
                             } else {
-                                // Intermediate or first routes
                                 RouteDetailItem(time: route.time2, station: route.station2, type: 2)
                             }
                         }
-
+                        
                         if route.delay > 1 {
                             DelayView(delay: route.delay, isDelayed: route.delay > 3)
                         }
                         
                         if index != app.routes.count - 1 {
-                                Divider()
-                            }
+                            Divider()
+                        }
                         
                     }
                     .padding([.leading, .trailing])
                 }
-
-
+                
+                
                 RoundedButton(
                     text: "Spustit trasu",
                     image: Image(systemName: "arrowtriangle.down.circle.fill"),
@@ -71,14 +67,14 @@ struct RouteDetailView: View {
             }
             .padding()
         }
-     
+        
     }
 }
 
 struct DelayView: View {
     let delay: Int
     let isDelayed: Bool
-
+    
     var body: some View {
         if delay > 1 {
             LazyHStack(spacing: 10) {
@@ -100,7 +96,7 @@ struct DelayView: View {
                 
                 Text(delay > 4 ? "Aktuální zpoždění \(delay) minut" : "Aktuálně zpoždění \(delay) minuty")
                     .fontWeight(.bold)
-                   
+                
             }
             .foregroundStyle(isDelayed ? .red : .green)
         }
@@ -111,7 +107,7 @@ struct RouteDetailItem: View {
     let time: String
     let station: String
     let type: Int
-
+    
     var body: some View {
         HStack(alignment: .center, spacing: 10) {
             if type == 1{

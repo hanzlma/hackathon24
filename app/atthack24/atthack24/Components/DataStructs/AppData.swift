@@ -21,18 +21,16 @@ class AppData: ObservableObject, Codable {
     @Published var goalClosestID: String = ""
     @Published var routes: [Route] = []
     @Published var activeSlide: Int = 0
-
+    
     enum CodingKeys: String, CodingKey {
         case test, startPlace, goalPlace, dTime, goalLatitude, goalLongitude, startLatitude, startLongitude,
              startClosestLatitude, startClosestLongitude, startClosestName, startClosestID,
              goalClosestLatitude, goalClosestLongitude, goalClosestName, goalClosestID,
              routes, activeSlide
     }
-
-    // Default initializer
+    
     init() {}
-
-    // Decodable initializer
+    
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.test = try container.decode(Int.self, forKey: .test)
@@ -54,8 +52,7 @@ class AppData: ObservableObject, Codable {
         self.routes = try container.decode([Route].self, forKey: .routes)
         self.activeSlide = try container.decode(Int.self, forKey: .activeSlide)
     }
-
-    // Encodable
+    
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(test, forKey: .test)
@@ -77,7 +74,7 @@ class AppData: ObservableObject, Codable {
         try container.encode(routes, forKey: .routes)
         try container.encode(activeSlide, forKey: .activeSlide)
     }
-
+    
     func resetSearchData() {
         startPlace = ""
         goalPlace = ""

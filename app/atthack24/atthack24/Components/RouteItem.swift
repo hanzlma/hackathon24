@@ -18,7 +18,7 @@ struct RouteItem: View {
     var isDelayed: Bool {
         delay > 3
     }
-
+    
     var body: some View {
         LazyVStack(alignment: .leading) {
             Text(routeName).font(.headline).foregroundStyle(Color.primaryColor)

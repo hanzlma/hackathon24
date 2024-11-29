@@ -9,7 +9,7 @@ import Foundation
 
 extension AppData {
     private var userDefaultsKey: String { "AppDataStorage" }
-
+    
     func save() {
         let encoder = JSONEncoder()
         if let encodedData = try? encoder.encode(self) {
@@ -18,7 +18,7 @@ extension AppData {
             print("Error: Failed to encode AppData")
         }
     }
-
+    
     func load() {
         guard let savedData = UserDefaults.standard.data(forKey: userDefaultsKey) else {
             print("No saved data found.")
@@ -31,7 +31,7 @@ extension AppData {
             print("Error: Failed to decode AppData")
         }
     }
-
+    
     private func copyFrom(_ other: AppData) {
         self.test = other.test
         self.startPlace = other.startPlace

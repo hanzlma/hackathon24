@@ -12,9 +12,9 @@ struct RouteActiveView: View {
     @EnvironmentObject var app: AppData
     
     
-    @State private var calculatedTime: String = "" // Last item's time + delay
-    @State private var startTime: String = "" // First item's time
-    @State private var travelDuration: String = "" // Time difference between first and last item's times
+    @State private var calculatedTime: String = ""
+    @State private var startTime: String = ""
+    @State private var travelDuration: String = ""
     
     var body: some View {
         NavigationStack {
@@ -31,13 +31,11 @@ struct RouteActiveView: View {
                         RouteCard(route: app.routes[index], index: index, isLast: index == app.routes.count - 1)
                             .padding(.horizontal)
                             .onAppear {
-                                // Save the start time from the first route
                                 if index == 0 {
                                     startTime = app.routes[index].time1
-                                    updateTravelDuration() // Attempt to calculate travel duration
+                                    updateTravelDuration()
                                 }
                                 
-                                // Calculate the end time for the last route
                                 if index == app.routes.count - 1 {
                                     let lastRoute = app.routes[index]
                                     let lastRouteTime = lastRoute.time2
@@ -45,13 +43,13 @@ struct RouteActiveView: View {
                                     
                                     if let calculated = addDelayToTime(time: lastRouteTime, delay: delayInMinutes) {
                                         calculatedTime = calculated
-                                        updateTravelDuration() // Recalculate travel duration once calculatedTime is available
+                                        updateTravelDuration()
                                     }
                                 }
                             }
                         if index != app.routes.count - 1 {
-                                Divider().padding([.leading, .trailing])
-                            }
+                            Divider().padding([.leading, .trailing])
+                        }
                     }
                     Spacer()
                     
@@ -70,7 +68,7 @@ struct RouteActiveView: View {
     
     func updateTravelDuration() {
         guard !startTime.isEmpty, !calculatedTime.isEmpty else {
-            travelDuration = "N/A" // Either time is missing
+            travelDuration = "Bohužel se vyskytla chyba"
             return
         }
         
@@ -79,7 +77,7 @@ struct RouteActiveView: View {
         
         guard let startDate = dateFormatter.date(from: startTime),
               let endDate = dateFormatter.date(from: calculatedTime) else {
-            travelDuration = "N/A" // Parsing failed
+            travelDuration = "Bohužel se vyskytla chyba"
             return
         }
         
@@ -95,7 +93,6 @@ struct RouteActiveView: View {
                 hDur = "\(hours) hodin"
             }
             
-            // Czech pluralization for minutes
             var dMin = ""
             if minutes == 1 {
                 dMin = "\(minutes) minuta"
@@ -107,7 +104,7 @@ struct RouteActiveView: View {
             
             travelDuration = "\(hDur) \(dMin)"
         } else {
-            travelDuration = "N/A"
+            travelDuration = "Bohužel se vyskytla chyba"
         }
     }
     
@@ -154,13 +151,12 @@ struct RouteActiveView: View {
                 dMin = "\(minutes) minut"
             }
         } else {
-            travelDuration = "N/A"
+            travelDuration = "Bohužel se vyskytla chyba"
         }
     }
     
     
     
-    /// Request permission for notifications
     private func requestNotificationPermission(h: Int, m: Int) {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if granted {
@@ -192,15 +188,14 @@ struct RouteHeaderView: View {
             HStack{
                 ZStack {
                     Circle()
-                        .strokeBorder(Color.green.opacity(0.6), lineWidth: 2) // Outer circle styling
-                        .frame(width: 20, height: 20) // Larger circle size
+                        .strokeBorder(Color.green.opacity(0.6), lineWidth: 2)
+                        .frame(width: 20, height: 20)
                     
-                    // Inner pulsing circle
                     Circle()
-                        .fill(Color.green) // Set inner circle color
-                        .frame(width: 12, height: 12) // Size of the inner circle
-                        .scaleEffect(isAnimating ? 1.25 : 1.0) // Pulsing effect
-                        .opacity(isAnimating ? 0.6 : 1.0) // Opacity changes
+                        .fill(Color.green)
+                        .frame(width: 12, height: 12)
+                        .scaleEffect(isAnimating ? 1.25 : 1.0)
+                        .opacity(isAnimating ? 0.6 : 1.0)
                         .animation(
                             Animation.easeInOut(duration: 1.5)
                                 .repeatForever(autoreverses: true),
@@ -208,7 +203,7 @@ struct RouteHeaderView: View {
                         )
                 }
                 .onAppear {
-                    isAnimating = true // Start animation when the view appears
+                    isAnimating = true
                 }.onDisappear{
                     isAnimating = false
                 }
@@ -218,7 +213,7 @@ struct RouteHeaderView: View {
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
             }
-                .padding([.leading, .top])
+            .padding([.leading, .top])
             
             Text("Předpokládaný čas příjezdu: \(estimatedTime)\nCelková doba cesty: \(travelDuration)")
                 .font(.headline)

@@ -38,12 +38,11 @@ struct RouteActive_GoogleMapView: View {
         .onAppear(perform: loadRouteURL)
     }
     
-    /// Load the route URL from the API
     private func loadRouteURL() {
         /*guard app.startLatitude != 0, app.startLongitude != 0, app.goalLatitude != 0, app.goalLongitude != 0 else {
-            showErrorState(message: "Souřadnice nejsou dostupné.")
-            return
-        }
+         showErrorState(message: "Souřadnice nejsou dostupné.")
+         return
+         }
          */
         
         var urlString = """

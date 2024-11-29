@@ -10,7 +10,7 @@ import SwiftUI
 
 struct RouteGroupView: View {
     @Binding var routes: [Route]
-
+    
     var body: some View {
         LazyVStack(alignment: .leading) {
             ForEach(routes.indices, id: \.self) { index in
