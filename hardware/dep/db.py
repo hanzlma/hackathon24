@@ -28,8 +28,9 @@ class DB:
         return toRet
 
     def getStopName(self,stopID):
-        res = self.conn.execute(f"select * from main.stops where id == ?",(stopID,))
-        return res.fetchone()[3]
+        res = self.conn.execute(f"select name,zone_id from main.stops where id == ?",(stopID,))
+        a = res.fetchone()
+        return a[0],a[1]
 if __name__ == "__main__":
     db = DB()
     print(db.checkLine(1))

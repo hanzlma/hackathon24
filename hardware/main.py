@@ -8,7 +8,7 @@ from unidecode import unidecode
 lcd = lcd()
 db = DB()
 keypad = Keypad()
-api = api("localhost")
+api = api()
 
 def enterRoute():
     lcd.clear()
@@ -81,18 +81,21 @@ if __name__ == "__main__":
             lineID = db.getLineID(line)
             if not lineID:
                 continue
-            lcd.display("linka "+linka,1,"center")
+
             stopCount = 1
             requested_stops= []
             while True:
-                requested_stops = api.getStops(lineID)
                 stopID = db.getStopFromLine(lineID,direction,stopCount)
                 if not stopID:
                     break
                 print(stopID)
-                stop = db.getStopName(stopID)
+                requested_stops = api.getStops(lineID,stopID)
+                stop,zone = db.getStopName(stopID)
+                if not zone:
+                    zone =0
                 print(stop)
-                lcd.setNext(unidecode(stop),True if stop in requested_stops else False)
+                lcd.display("linka :" + linka+"  zona:"+zone, 1, )
+                lcd.setNext(unidecode(stop),True if stopID in requested_stops else False)
                 if keypad.getKey()=="*":
                     break
                 stopCount += 1
