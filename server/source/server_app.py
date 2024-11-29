@@ -78,4 +78,5 @@ def postUserRoute(routes: List[UserRouteModel]):
 
 @app.get('/trip/nextstopsstate/trip={trip}&curr_stop={stop}&seq={seq}')
 def getNextStopsState(trip: str, stop: str, seq: str):
-    return nextStopsState(trip, stop, i
+    return nextStopsState(trip, stop, int(seq))
+
