@@ -22,6 +22,12 @@ class AppData: ObservableObject, Codable {
     @Published var routes: [Route] = []
     @Published var activeSlide: Int = 0
     
+    var apiTime: String {
+          let formatter = DateFormatter()
+          formatter.dateFormat = "d. M. yyyy HH:mm"
+          return formatter.string(from: dTime)
+      }
+    
     enum CodingKeys: String, CodingKey {
         case test, startPlace, goalPlace, dTime, goalLatitude, goalLongitude, startLatitude, startLongitude,
              startClosestLatitude, startClosestLongitude, startClosestName, startClosestID,

@@ -16,11 +16,41 @@ struct RouteDetailView: View {
                 ForEach(routes.indices, id: \.self) { index in
                     let route = routes[index]
                     VStack(alignment: .leading, spacing: 10) {
-                        Text(route.routeName)
-                            .font(.headline)
-                            .fontWeight(.bold)
-                            .foregroundStyle(Color.primaryColor)
                         
+                        if route.routeName == "C" {
+                            HStack{
+                                Image(systemName: "tram")
+                                Text(route.routeName)
+                                    .font(.headline)
+                                    .fontWeight(.bold)
+                                    
+                            }.foregroundStyle(Color.red)
+                        }
+                        else if route.routeName == "B" {
+                            HStack{
+                                Image(systemName: "tram")
+                                Text(route.routeName)
+                                    .font(.headline)
+                                    .fontWeight(.bold)
+                                    
+                            }.foregroundStyle(Color.yellow)
+                        }
+                        else if route.routeName == "A" {
+                            HStack{
+                                Image(systemName: "tram")
+                                Text(route.routeName)
+                                    .font(.headline)
+                                    .fontWeight(.bold)
+                                    
+                            }.foregroundStyle(Color.green)
+                        }else{
+                            
+                            Text(route.routeName)
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .foregroundStyle(Color.primaryColor)
+                            
+                        }
                         VStack(alignment: .leading, spacing: 10) {
                             if index == 0 {
                                 
@@ -135,26 +165,3 @@ struct RouteDetailItem: View {
     }
 }
 
-#Preview {
-    RouteDetailView(
-        routes: .constant([
-            Route(
-                delay: 5,
-                routeName: "Tram 10",
-                time1: "10:00",
-                time2: "10:10",
-                station1: "Vozovna Komín",
-                station2: "Brno - Hlavní nádraží"
-            ),
-            Route(
-                delay: 3,
-                routeName: "Tram 9",
-                time1: "10:12",
-                time2: "10:20",
-                station1: "Brno - Hlavní nádraží",
-                station2: "Brno - Centrum"
-            )
-        ])
-    )
-    .environmentObject(AppData())
-}

@@ -16,6 +16,9 @@ struct RouteActive_GoogleMapView: View {
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
     
+    @StateObject private var locationManager = LocationManager()
+   
+    
     var body: some View {
         VStack {
             if isLoading {
@@ -35,22 +38,44 @@ struct RouteActive_GoogleMapView: View {
                 .frame(width: 400, height: 600)
             }
         }
-        .onAppear(perform: loadRouteURL)
+        .onAppear {
+            locationManager.startUpdatingLocation()
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                   loadRouteURL()
+               }
+            
+ 
+        }
+        .onDisappear {
+            locationManager.stopUpdatingLocation()
+        }
+        
+        
     }
     
     private func loadRouteURL() {
-        /*guard app.startLatitude != 0, app.startLongitude != 0, app.goalLatitude != 0, app.goalLongitude != 0 else {
-         showErrorState(message: "Souřadnice nejsou dostupné.")
-         return
-         }
-         */
         
-        var urlString = """
-        https://server-gedu3pbu3q-lm.a.run.app/route/start_latitude=\(app.startLatitude)&start_longitude=\(app.startLongitude)&destination_latitude=\(app.goalLatitude)&destination_longitude=\(app.goalLongitude)
-        """
+       
+        var urlString: String = ""
+
+        if let startLatitude = app.routes.first?.startLatitude,
+           let startLongitude = app.routes.first?.startLongitude,let location = locationManager.location   {
+            urlString = """
+            https://server-gedu3pbu3q-lm.a.run.app/navigation/start_latitude=\(location.coordinate.latitude)&start_longitude=\(location.coordinate.longitude)&destination_latitude=\(startLatitude)&destination_longitude=\(startLongitude)
+            """
+        } else {
+            print("Error: Unable to unwrap route coordinates")
+        }
         
-        urlString="https://server-gedu3pbu3q-lm.a.run.app/route/start_latitude=40.7128&start_longitude=-74.0060&destination_latitude=40.7306&destination_longitude=-73.9352"
+        print(urlString)
         
+        //guard app.startLatitude != 0, app.startLongitude != 0, app.goalLatitude != 0, app.goalLongitude != 0 else {
+         //showErrorState(message: "Souřadnice nejsou dostupné.")
+         //return
+         //}
+        
+          
         isLoading = true
         showError = false
         

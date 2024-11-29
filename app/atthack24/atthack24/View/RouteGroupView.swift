@@ -28,11 +28,4 @@ struct RouteGroupView: View {
     }
 }
 
-#Preview {
-    RouteGroupView(
-        routes: .constant([
-            Route(delay: 0, routeName: "Tram 1", time1: "10:00", time2: "10:10", station1: "Station A", station2: "Station B"),
-            Route(delay: 5, routeName: "Tram 10", time1: "10:12", time2: "10:20", station1: "Station B", station2: "Station C")
-        ])
-    )
-}
+

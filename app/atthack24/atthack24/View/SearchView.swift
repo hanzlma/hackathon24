@@ -14,7 +14,7 @@ struct SearchView: View {
     var body: some View {
         ZStack {
             if isSearched {
-                SearchResultsView(isSearched: $isSearched)
+                SearchResultsView(isSearched: $isSearched, groupedRoutes: .constant([app.routes]))
                     .environmentObject(app)
                     .transition(.move(edge: .trailing))
             } else {

@@ -21,7 +21,44 @@ struct RouteItem: View {
     
     var body: some View {
         LazyVStack(alignment: .leading) {
-            Text(routeName).font(.headline).foregroundStyle(Color.primaryColor)
+            
+            if routeName == "C" {
+                HStack{
+                    Image(systemName: "tram")
+                    Text(routeName)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        
+                }.foregroundStyle(Color.red)
+            }
+            else if routeName == "B" {
+                HStack{
+                    Image(systemName: "tram")
+                    Text(routeName)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        
+                }.foregroundStyle(Color.yellow)
+            }
+            else if routeName == "A" {
+                HStack{
+                    Image(systemName: "tram")
+                    Text(routeName)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        
+                }.foregroundStyle(Color.green)
+            }else{
+                
+                Text(routeName)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.primaryColor)
+                
+            }
+            
+            
+            
             LazyVStack(alignment: .leading) {
                 HStack {
                     Text(time1).bold()

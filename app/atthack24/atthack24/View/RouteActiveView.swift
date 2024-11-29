@@ -48,8 +48,8 @@ struct RouteActiveView: View {
                                 }
                             }
                         if index != app.routes.count - 1 {
-                            Divider().padding([.leading, .trailing])
-                        }
+                                Divider().padding([.leading, .trailing])
+                            }
                     }
                     Spacer()
                     
@@ -61,10 +61,55 @@ struct RouteActiveView: View {
                 Color.white.frame(height: 0)
             }
             .onAppear {
+                
                 requestNotificationPermission(h:0, m:39)
+                
+                sendTrips(app: app, api: CallAPI())
             }
         }.padding(.top, 1)
     }
+        
+    func sendTrips(app: AppData, api: CallAPI) {
+        // Prepare an array of dictionaries instead of a Codable struct
+        let trips: [[String: String]] = app.routes.map { route in
+            [
+                "line": route.routeName,
+                "start_lat": String(route.startLatitude),
+                "start_lng": String(route.startLongitude),
+                "dest_lat": String(route.endLatitude),
+                "dest_lng": String(route.endLongitude)
+            ]
+        }
+        
+        print("\(trips)")
+        
+        // URL to send the data
+        let urlString = "https://server-gedu3pbu3q-lm.a.run.app/user/route"
+
+        // Post data as a JSON array
+        api.postData(to: urlString, body: trips) { result in
+            switch result {
+            case .success:
+                print("Trips posted successfully.\(result)")
+            case .failure(let error):
+                print("Failed to post trips: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    // Palác koruna
+    // Divadlo na vinohradech
+    //
+    
+    // Želivského
+    // Plananska lidl
+    // 14:25
+    
+    //Náměstí míru
+    //IKEA černý most
+    
+    //13:50
+    
     
     func updateTravelDuration() {
         guard !startTime.isEmpty, !calculatedTime.isEmpty else {
@@ -213,7 +258,7 @@ struct RouteHeaderView: View {
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
             }
-            .padding([.leading, .top])
+                .padding([.leading, .top])
             
             Text("Předpokládaný čas příjezdu: \(estimatedTime)\nCelková doba cesty: \(travelDuration)")
                 .font(.headline)
@@ -229,10 +274,42 @@ struct RouteCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(route.routeName)
-                .font(.headline)
-                .fontWeight(.bold)
-                .foregroundStyle(Color.primaryColor)
+            
+            if route.routeName == "C" {
+                HStack{
+                    Image(systemName: "tram")
+                    Text(route.routeName)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        
+                }.foregroundStyle(Color.red)
+            }
+            else if route.routeName == "B" {
+                HStack{
+                    Image(systemName: "tram")
+                    Text(route.routeName)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        
+                }.foregroundStyle(Color.yellow)
+            }
+            else if route.routeName == "A" {
+                HStack{
+                    Image(systemName: "tram")
+                    Text(route.routeName)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        
+                }.foregroundStyle(Color.green)
+            }else{
+                
+                Text(route.routeName)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.primaryColor)
+                
+            }
+            
             
             VStack(alignment: .leading, spacing: 10) {
                 RouteDetailItem(time: route.time1, station: route.station1, type: index == 0 ? 1 : 2)

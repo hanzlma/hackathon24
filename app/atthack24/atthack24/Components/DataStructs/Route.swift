@@ -8,11 +8,14 @@
 import Foundation
 
 struct Route: Codable {
-    let id = UUID()
-    var delay: Int
-    var routeName: String
-    var time1: String
-    var time2: String
-    var station1: String
-    var station2: String
+    let delay: Int
+    let routeName: String
+    let time1: String
+    let time2: String
+    let station1: String
+    let station2: String
+    let startLatitude: Double
+    let startLongitude: Double
+    let endLatitude: Double
+    let endLongitude: Double
 }
