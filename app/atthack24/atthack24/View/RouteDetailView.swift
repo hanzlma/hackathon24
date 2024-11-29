@@ -24,10 +24,12 @@ struct RouteDetailView: View {
                         VStack(alignment: .leading, spacing: 10) {
                             if index == 0 {
                                 // First route
+                                
                                 RouteDetailItem(time: route.time1, station: route.station1, type: 1)
                             } else {
                                 // Intermediate or last routes
                                 RouteDetailItem(time: route.time1, station: route.station1, type: 2)
+                                
                             }
                             
                             if index == routes.count - 1 {
@@ -42,8 +44,13 @@ struct RouteDetailView: View {
                         if route.delay > 1 {
                             DelayView(delay: route.delay, isDelayed: route.delay > 3)
                         }
+                        
+                        if index != app.routes.count - 1 {
+                                Divider()
+                            }
+                        
                     }
-                    .padding()
+                    .padding([.leading, .trailing])
                 }
 
 
@@ -73,23 +80,30 @@ struct DelayView: View {
     let isDelayed: Bool
 
     var body: some View {
-        LazyHStack(spacing: 10) {
-            if delay == 5 {
-                Image(systemName: "goforward.5")
-            } else if delay == 10 {
-                Image(systemName: "goforward.10")
-            } else if delay == 15 {
-                Image(systemName: "goforward.15")
-            } else if delay == 30 {
-                Image(systemName: "goforward.30")
-            } else {
-                Image(systemName: "timer")
+        if delay > 1 {
+            LazyHStack(spacing: 10) {
+                if delay == 5 {
+                    Image(systemName: "goforward.5").resizable().frame(width: 23, height: 25)
+                } else if delay == 10 {
+                    Image(systemName: "goforward.10")
+                        .resizable().frame(width: 23, height: 25)
+                } else if delay == 15 {
+                    Image(systemName: "goforward.15")
+                        .resizable().frame(width: 23, height: 25)
+                } else if delay == 30 {
+                    Image(systemName: "goforward.30")
+                        .resizable().frame(width: 23, height: 25)
+                } else {
+                    Image(systemName: "timer")
+                        .resizable().frame(width: 23, height: 25)
+                }
+                
+                Text(delay > 4 ? "Aktuální zpoždění \(delay) minut" : "Aktuálně zpoždění \(delay) minuty")
+                    .fontWeight(.bold)
+                   
             }
-
-            Text(delay > 5 ? "Aktuální zpoždění \(delay) minut" : "Aktuálně zpoždění \(delay) minuty")
-                .fontWeight(.bold)
+            .foregroundStyle(isDelayed ? .red : .green)
         }
-        .foregroundStyle(isDelayed ? .red : .green)
     }
 }
 
@@ -101,7 +115,7 @@ struct RouteDetailItem: View {
     var body: some View {
         HStack(alignment: .center, spacing: 10) {
             if type == 1{
-                Image(systemName: "mappin.and.ellipse")
+                Image(systemName: "location.fill")
                     .frame(width: 20)
             }
             if type == 2{

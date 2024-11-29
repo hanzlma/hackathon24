@@ -11,16 +11,49 @@ import UserNotifications
 struct RouteActiveView: View {
     @EnvironmentObject var app: AppData
     
+    
+    @State private var calculatedTime: String = "" // Last item's time + delay
+    @State private var startTime: String = "" // First item's time
+    @State private var travelDuration: String = "" // Time difference between first and last item's times
+    
     var body: some View {
         NavigationStack {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 20) {
-                    RouteHeaderView(startPlace: app.startPlace, goalPlace: app.goalPlace)
+                    RouteHeaderView(
+                        startPlace: app.startPlace,
+                        goalPlace: app.goalPlace,
+                        estimatedTime: calculatedTime,
+                        travelDuration: travelDuration
+                    )
                     
                     ForEach(app.routes.indices, id: \.self) { index in
                         RouteCard(route: app.routes[index], index: index, isLast: index == app.routes.count - 1)
                             .padding(.horizontal)
+                            .onAppear {
+                                // Save the start time from the first route
+                                if index == 0 {
+                                    startTime = app.routes[index].time1
+                                    updateTravelDuration() // Attempt to calculate travel duration
+                                }
+                                
+                                // Calculate the end time for the last route
+                                if index == app.routes.count - 1 {
+                                    let lastRoute = app.routes[index]
+                                    let lastRouteTime = lastRoute.time2
+                                    let delayInMinutes = lastRoute.delay
+                                    
+                                    if let calculated = addDelayToTime(time: lastRouteTime, delay: delayInMinutes) {
+                                        calculatedTime = calculated
+                                        updateTravelDuration() // Recalculate travel duration once calculatedTime is available
+                                    }
+                                }
+                            }
+                        if index != app.routes.count - 1 {
+                                Divider().padding([.leading, .trailing])
+                            }
                     }
+                    Spacer()
                     
                     ActionButtonsView()
                         .padding()
@@ -30,21 +63,113 @@ struct RouteActiveView: View {
                 Color.white.frame(height: 0)
             }
             .onAppear {
-                requestNotificationPermission()
+                requestNotificationPermission(h:0, m:39)
             }
         }.padding(.top, 1)
     }
     
+    func updateTravelDuration() {
+        guard !startTime.isEmpty, !calculatedTime.isEmpty else {
+            travelDuration = "N/A" // Either time is missing
+            return
+        }
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm"
+        
+        guard let startDate = dateFormatter.date(from: startTime),
+              let endDate = dateFormatter.date(from: calculatedTime) else {
+            travelDuration = "N/A" // Parsing failed
+            return
+        }
+        
+        let components = Calendar.current.dateComponents([.hour, .minute], from: startDate, to: endDate)
+        if let hours = components.hour, let minutes = components.minute {
+            
+            var hDur = ""
+            if hours == 1 {
+                hDur = "\(hours) hodina"
+            } else if hours > 1 && hours < 5 {
+                hDur = "\(hours) hodiny"
+            } else if hours >= 5 {
+                hDur = "\(hours) hodin"
+            }
+            
+            // Czech pluralization for minutes
+            var dMin = ""
+            if minutes == 1 {
+                dMin = "\(minutes) minuta"
+            } else if minutes > 1 && minutes < 5 {
+                dMin = "\(minutes) minuty"
+            } else if minutes >= 5 || minutes == 0 {
+                dMin = "\(minutes) minut"
+            }
+            
+            travelDuration = "\(hDur) \(dMin)"
+        } else {
+            travelDuration = "N/A"
+        }
+    }
+    
+    /// Adds delay to the given time
+    func addDelayToTime(time: String, delay: Int) -> String? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm"
+        
+        if let date = dateFormatter.date(from: time) {
+            let delayedDate = Calendar.current.date(byAdding: .minute, value: delay, to: date)
+            return dateFormatter.string(from: delayedDate!)
+        } else {
+            return nil
+        }
+    }
+    func calculateTravelDuration(startTime: String) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm"
+        
+        guard let startDate = dateFormatter.date(from: startTime),
+              let endDate = dateFormatter.date(from: calculatedTime) else {
+            travelDuration = "N/A"
+            return
+        }
+        
+        let components = Calendar.current.dateComponents([.hour, .minute], from: startDate, to: endDate)
+        if let hours = components.hour, let minutes = components.minute {
+            
+            var hDur = ""
+            if hours == 1 {
+                hDur = "\(hours) hodina"
+            } else if hours > 1 && hours < 5 {
+                hDur = "\(hours) hodiny"
+            } else if hours >= 5 {
+                hDur = "\(hours) hodin"
+            }
+            
+            var dMin = ""
+            if minutes == 1 {
+                dMin = "\(minutes) minuta"
+            } else if minutes > 1 && minutes < 5 {
+                dMin = "\(minutes) minuty"
+            } else if minutes >= 5 || minutes == 0 {
+                dMin = "\(minutes) minut"
+            }
+        } else {
+            travelDuration = "N/A"
+        }
+    }
+    
+    
+    
     /// Request permission for notifications
-    private func requestNotificationPermission() {
+    private func requestNotificationPermission(h: Int, m: Int) {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if granted {
                 NotificationScheduler.scheduleNotification(
                     title: "\(app.startPlace) - \(app.goalPlace)",
                     subtitle: "Blíží se čas odjezdu. Měli byste vyrazit!",
                     body: "This is your notification scheduled for 17:07.",
-                    hour: 17,
-                    minute: 20
+                    hour: h,
+                    minute: m
                 )
             } else {
                 print("Notification permission denied.")
@@ -56,16 +181,52 @@ struct RouteActiveView: View {
 struct RouteHeaderView: View {
     let startPlace: String
     let goalPlace: String
+    let estimatedTime: String
+    let travelDuration: String
+    
+    @State private var isAnimating = false
     
     var body: some View {
-        Text("\(startPlace) - \(goalPlace)")
-            .font(.title2)
-            .fontWeight(.semibold)
-            .foregroundStyle(.secondary)
-            .padding()
+        VStack(alignment: .leading, spacing: 10) {
+            
+            HStack{
+                ZStack {
+                    Circle()
+                        .strokeBorder(Color.green.opacity(0.6), lineWidth: 2) // Outer circle styling
+                        .frame(width: 20, height: 20) // Larger circle size
+                    
+                    // Inner pulsing circle
+                    Circle()
+                        .fill(Color.green) // Set inner circle color
+                        .frame(width: 12, height: 12) // Size of the inner circle
+                        .scaleEffect(isAnimating ? 1.25 : 1.0) // Pulsing effect
+                        .opacity(isAnimating ? 0.6 : 1.0) // Opacity changes
+                        .animation(
+                            Animation.easeInOut(duration: 1.5)
+                                .repeatForever(autoreverses: true),
+                            value: isAnimating
+                        )
+                }
+                .onAppear {
+                    isAnimating = true // Start animation when the view appears
+                }.onDisappear{
+                    isAnimating = false
+                }
+                
+                Text("\(startPlace) - \(goalPlace)")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+            }
+                .padding([.leading, .top])
+            
+            Text("Předpokládaný čas příjezdu: \(estimatedTime)\nCelková doba cesty: \(travelDuration)")
+                .font(.headline)
+                .padding(.leading)
+            
+        }
     }
 }
-
 struct RouteCard: View {
     let route: Route
     let index: Int
