@@ -3,6 +3,7 @@ import os, shutil
 import pandas as pd
 import mysql.connector
 import atexit
+import gmaps
 
 folder_path = './data/'
 zip_url = 'https://data.pid.cz/PID_GTFS.zip'
@@ -277,6 +278,28 @@ def create_nodes():
     db.commit()
     
 
+def prepare_database():
+    global db
+    db = mysql.connector.connect(**config)
+    global cursor_obj
+    cursor_obj = db.cursor()
+
+
+def get_from_cords(coordinates):
+    prepare_database()
+
+    in_lat = "("
+    in_lng = "("
+    for coord in coordinates:
+        in_lat += f"{coord.lat},"
+        in_lng += f"{coord.lng},"
+    in_lat = in_lat[:-1] + ")"
+    in_lng = in_lng[:-1] + ")"
+    
+    cursor_obj.execute(f"SELECT * FROM stops WHERE latitude IN {in_lat} AND longitude IN {in_lng}")
+    return cursor_obj.fetchall()
+
+
 def update_database():
     atexit.register(clean_up)
 
@@ -291,10 +314,7 @@ def update_database():
     # Load the extracted files
     dataframes = get_csvs(file_paths)
     
-    global db
-    db = mysql.connector.connect(**config)
-    global cursor_obj
-    cursor_obj = db.cursor()
+    prepare_database()
 
     # Import to database
     create_tables()
