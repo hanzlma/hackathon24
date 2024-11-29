@@ -1,12 +1,14 @@
 from dep.keypad import Keypad,rpi_gpio
 from dep.db import DB
 from dep.lcd import lcd
+from dep.api import api
 from time import sleep
 from unidecode import unidecode
 
 lcd = lcd()
 db = DB()
 keypad = Keypad()
+api = api()
 
 def enterRoute():
     lcd.clear()
@@ -16,9 +18,6 @@ def enterRoute():
         lcd.display(user, 2, "center")
         key = keypad.getKey()
         print(key)
-        if key =="C":
-            user+="R"
-            continue
         if key =="D":
             user+="S"
             continue
@@ -31,9 +30,34 @@ def enterRoute():
         user += str(key)
     return user
 
+def enterTrip():
+    lcd.display("zadej trip:", 3, "center")
+    user = ""
+    while True:
+        lcd.display(user, 4, "center")
+        key = keypad.getKey()
+        print(key)
+        if key == "A":
+            user += "_"
+            continue
+        if key == "*":
+            if user == "":
+                return "",False
+            user = ""
+            lcd.display("        ", 4, "center")
+            continue
+        if key == "#":
+            break
+        user += str(key)
+    return user,True
+
 def getLineAndDir(line):
     dir = 0 if line[-1]=="A" else 1
     return line[:-1],dir
+
+def processTrip(trip,line):
+    return line+"_"+trip
+
 
 if __name__ == "__main__":
     try:
@@ -45,20 +69,30 @@ if __name__ == "__main__":
             except IndexError:
                 continue
             line , direction = getLineAndDir(linka)
+            trip,success = enterTrip()
+            if not success:
+                continue
             print(line,direction)
+            trip = processTrip(trip,line)
+            print(trip)
             lineID = db.getLineID(line)
             if not lineID:
                 continue
-            lcd.display("linka "+linka,1,"center")
+
             stopCount = 1
+            requested_stops= []
             while True:
                 stopID = db.getStopFromLine(lineID,direction,stopCount)
-                if(not stopID):
+                if not stopID:
                     break
                 print(stopID)
-                stop = db.getStopName(stopID)
+                requested_stops = api.getStops(lineID,stopID)
+                stop,zone = db.getStopName(stopID)
+                if not zone:
+                    zone =0
                 print(stop)
-                lcd.setNext(unidecode(stop),True)
+                lcd.display("linka :" + linka+"  zona:"+zone, 1, )
+                lcd.setNext(unidecode(stop),True if stopID in requested_stops else False)
                 if keypad.getKey()=="*":
                     break
                 stopCount += 1
