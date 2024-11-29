@@ -72,8 +72,15 @@ if __name__ == "__main__":
                     continue
                 line , direction = getLineAndDir(linka)
             else:
-                direction = direction ^1
+                if(direction == 0):
+                    direction = 1
+                    linka = line+"B"
+                else:
+                    direction = 2
+                    linka = line + "A"
                 normalend = 0
+                lcd.display("linka :" + linka,1)
+            print(linka)
             trip,success = enterTrip()
             if not success:
                 continue
