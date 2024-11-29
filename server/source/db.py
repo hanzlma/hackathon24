@@ -80,6 +80,6 @@ def nextStopsState(trip: str, stop: str, seq: int):
                 stops.append(cursor.fetchone())
             for stop in stops:
                 sql = 'SELECT * FROM hackathon.user_trips WHERE trip_id = %s AND %s IN (dest_id, start_id);'
-                if len(cursor.execute(sql, (trip, stop)).fetchall()) > 0:
+                if len(cursor.execute(sql, (trip, stop).fetchall())) > 0:
                     ret_stops.append(stop)
             return ret_stops
