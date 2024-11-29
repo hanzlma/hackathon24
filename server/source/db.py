@@ -27,7 +27,7 @@ class Route:
 def parse_json(json):
     routes = []
     for step in json:
-        routes.append(Route(step['departure_stop']['name'], step['arrival_stop']['name'], step['departure_time'], step['arrival_time'], step['line']['short_name']))
+        routes.append(Route(step['departure_stop'], step['arrival_stop'], step['departure_time'], step['arrival_time'], step['line']['short_name']))
     return routes
 
 def getClosestStation(cords: Cords):
