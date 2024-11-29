@@ -99,12 +99,14 @@ if __name__ == "__main__":
                     normalend = 1
                     break
                 print(stopID)
-                requested_stops = api.getStops(lineID,stopID,stopCount)
+                requested_stops = api.getStops(trip,stopID,stopCount-1)
                 stop,zone = db.getStopName(stopID)
                 if not zone:
                     zone =0
                 print(stop)
                 lcd.display("linka :" + linka+"  zona:"+zone, 1, )
+                print(requested_stops)
+                print()
                 lcd.setNext(unidecode(stop),True if stopID in requested_stops else False)
                 if keypad.getKey()=="*":
                     break
