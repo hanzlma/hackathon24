@@ -24,9 +24,9 @@ class Maps:
         return f"https://www.google.com/maps/dir/?api=1&origin={start.lat},{start.lng}&destination={dest.lat},{dest.lng}&travelmode={travelmode}"
 
     def GetRoute(start:Cords, dest:Cords, departure_time: str):
-        t = time.mktime(time.strptime(departure_time, "%H:%M"))
+        t = time.mktime(time.strptime(departure_time, "$d. $m. %H:%M"))
         res = requests.get(f"https://maps.googleapis.com/maps/api/directions/json?destination={dest.lat},{dest.lng}&origin={start.lat},{start.lng}&mode=transit&departure_time={t}&key={gmapsapikey}")
         routes = []
-        [routes.append(x) if 'transit_details' in x.keys() else None for x in res.json()['routes'][0]['legs'][0]['steps']]
+        [routes.append(x['transit_details']) if 'transit_details' in x.keys() else None for x in res.json()['routes'][0]['legs'][0]['steps']]
         return routes
 
