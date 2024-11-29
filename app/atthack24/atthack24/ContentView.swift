@@ -7,36 +7,37 @@
 
 import SwiftUI
 import CoreData
-
 struct ContentView: View {
-    @StateObject var app = AppData()
-    
-    var body: some View {
-        
-        
-        ZStack {
+    @ObservedObject var app: AppData = AppData()
 
-            if app.activeSlide == 0{
+    init() {
+        app.load()
+    }
+
+    @Environment(\.scenePhase) private var scenePhase
+
+    var body: some View {
+        ZStack {
+            if app.activeSlide == 0 {
                 SearchView()
-                .environmentObject(app)
-                .transition(.move(edge: .top))
-                .onAppear {
-                    //app.test = 1
-                }
-            }else{
+                    .environmentObject(app)
+                    .transition(.move(edge: .top))
+            } else {
                 RouteActiveView()
                     .environmentObject(app)
-                    .transition(.move(edge: .bottom)) // .top
+                    .transition(.move(edge: .bottom))
             }
-            
         }
-        .animation(.easeInOut(duration: 0.3), value: app.activeSlide == 0) // Smooth animation
-
-        
-        
-        
+        .animation(.easeInOut(duration: 0.3), value: app.activeSlide == 0)
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .background {
+                print("Scene entered background. Saving data...") 
+                app.save()
+            }
+        }
     }
 }
+
 
 #Preview {
     ContentView()

@@ -18,7 +18,7 @@ struct RouteItem: View {
     var isDelayed: Bool {
         delay > 3
     }
-
+    
     var body: some View {
         LazyVStack(alignment: .leading) {
             Text(routeName).font(.headline).foregroundStyle(Color.primaryColor)
@@ -51,7 +51,7 @@ struct RouteItem: View {
                         }
                         
                         
-                        Text(delay > 5 ? "Aktuální zpoždění \(delay) minut" : "Aktuálně zpoždění \(delay) minuty")
+                        Text(delay > 4 ? "Aktuální zpoždění \(delay) minut" : "Aktuálně zpoždění \(delay) minuty")
                     }.foregroundStyle(isDelayed ? .red : .green).bold()
                 }
             }.padding(.leading)

@@ -8,31 +8,23 @@
 import SwiftUI
 
 struct SearchView: View {
-    
-    
     @State private var isSearched = false
-    
     @EnvironmentObject var app: AppData
-       
+    
     var body: some View {
-        
         ZStack {
             if isSearched {
                 SearchResultsView(isSearched: $isSearched)
                     .environmentObject(app)
-                    .transition(.move(edge: .trailing)) //.bottom
+                    .transition(.move(edge: .trailing))
             } else {
                 SearchFiltersView(isSearched: $isSearched)
                     .environmentObject(app)
-                    .transition(.move(edge: .leading)) // .top
+                    .transition(.move(edge: .leading))
             }
         }
-        .animation(.easeInOut(duration: 0.3), value: isSearched) // Smooth animation
-
-        
+        .animation(.easeInOut(duration: 0.3), value: isSearched)
     }
-    
-    
 }
 
 #Preview {

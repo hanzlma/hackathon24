@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Route: Identifiable, Hashable {
+struct Route: Codable {
     let id = UUID()
     var delay: Int
     var routeName: String

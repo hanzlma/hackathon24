@@ -98,16 +98,16 @@ struct EmptyDetailView: View {
  Text("\(app.startLongitude)")
  
  Divider()
-
+ 
  Text("Closest Name: \(app.goalClosestName)").font(.subheadline)
-    Text("Closest ID: \(app.goalClosestID)")
-    Text("Latitude: \(app.goalClosestLatitude)")
-    Text("Longitude: \(app.goalClosestLongitude)")
-    
-    Divider()
-   
-    Text("Closest Name: \(app.startClosestName)").font(.subheadline)
-    Text("Closest ID: \(app.startClosestID)")
-    Text("Latitude: \(app.startClosestLatitude)")
-    Text("Longitude: \(app.startClosestLongitude)")
+ Text("Closest ID: \(app.goalClosestID)")
+ Text("Latitude: \(app.goalClosestLatitude)")
+ Text("Longitude: \(app.goalClosestLongitude)")
+ 
+ Divider()
+ 
+ Text("Closest Name: \(app.startClosestName)").font(.subheadline)
+ Text("Closest ID: \(app.startClosestID)")
+ Text("Latitude: \(app.startClosestLatitude)")
+ Text("Longitude: \(app.startClosestLongitude)")
  */

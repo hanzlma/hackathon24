@@ -17,25 +17,30 @@ struct SearchFiltersView: View {
     @State private var showAlert = false
     @EnvironmentObject var app: AppData
     @StateObject private var locationManager = LocationManager()
-
-  
+    
+    
+    
     private let dataFetcher = CallAPI()
     
     var body: some View {
         VStack {
+            
             HeaderView()
-                .padding(.bottom, 80)
+                .padding(.bottom, 15)
             
             InputFieldsView()
                 .zIndex(1)
             
             DatePicker("Čas odjezdu", selection: $searchRequest.when, displayedComponents: .hourAndMinute)
+                .datePickerStyle(.automatic)
+            
                 .onAppear {
                     locationManager.startUpdatingLocation()
                 }
                 .onDisappear {
                     locationManager.stopUpdatingLocation()
                 }
+            
             
             RoundedButton(
                 text: "Vyhledat",
@@ -51,33 +56,58 @@ struct SearchFiltersView: View {
                     dismissButton: .default(Text("OK"))
                 )
             }
+            
         }
         .padding()
-        .onAppear { populateFieldsFromAppData() }
+        .onAppear {
+            populateFieldsFromAppData()
+            
+        }
     }
     
     private func HeaderView() -> some View {
         VStack {
-            Image("tram").resizable().frame(width: 200, height: 200)
+            /*Image("tram").resizable().frame(width: 200, height: 200)
+             Text("Press & Go")
+             .foregroundColor(Color.primaryColor)
+             .bold()
+             .font(.largeTitle)
+             .padding(.top, -40)
+             */
+            
+            Image(systemName: "tram").resizable().frame(width: 110, height: 155)
             Text("Press & Go")
                 .foregroundColor(Color.primaryColor)
                 .bold()
                 .font(.largeTitle)
-                .padding(.top, -40)
+            //.padding(.top, -40)
         }
     }
     
     private func InputFieldsView() -> some View {
         VStack {
+            HStack {
+                Image(systemName: "location.fill")
+                    .foregroundColor(.gray)
                 TextField("Moje poloha", text: $searchRequest.startPlace)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(8)
-
-            TextField("Kam", text: $searchRequest.goalPlace)
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(8)
+                    .padding(.vertical, 8)
+            }
+            .padding(.horizontal)
+            .background(Color(.systemGray6))
+            .cornerRadius(8)
+            .padding(.bottom, 6)
+            
+            
+            
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.gray)
+                TextField("Kam", text: $searchRequest.goalPlace)
+                    .padding(.vertical, 8)
+            }
+            .padding(.horizontal)
+            .background(Color(.systemGray6))
+            .cornerRadius(8)
         }
     }
     
@@ -87,11 +117,18 @@ struct SearchFiltersView: View {
             app.goalPlace = searchRequest.goalPlace
             app.dTime = searchRequest.when
             
+            var url = "https://server-gedu3pbu3q-lm.a.run.app/routes/time=\(searchRequest.when)&start=\(searchRequest.startPlace)&destination=\(searchRequest.goalPlace)"
+            
             if searchRequest.startPlace.isEmpty, let location = locationManager.location {
                 app.startLatitude = location.coordinate.latitude
                 app.startLongitude = location.coordinate.longitude
                 app.startPlace = "Má poloha"
+                
+                url = "https://server-gedu3pbu3q-lm.a.run.app/routes/time=\(searchRequest.when)&start_latitude=\(location.coordinate.latitude)&start_longitude=\(location.coordinate.longitude)&destination=\(searchRequest.goalPlace)"
+                
             }
+            
+            
             
             isSearched = true
         } else {

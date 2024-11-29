@@ -4,3 +4,6 @@
 /server/__pycache__
 /server/source/__pycache__
 /server/source/config.py
+/hardware/db.sqlite3-journal
+/hardware/db.sqlite3
+.DS_Store

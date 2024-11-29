@@ -15,19 +15,17 @@ struct Cords: Decodable {
     let longitude: Double
     
     enum CodingKeys: String, CodingKey {
-        case lat, lng // For "lat" and "lng" keys
-        case latitude, longitude // For "latitude" and "longitude" keys
+        case lat, lng
+        case latitude, longitude
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        // Try to decode "latitude" and "longitude" first
         if let latitude = try? container.decode(Double.self, forKey: .latitude),
            let longitude = try? container.decode(Double.self, forKey: .longitude) {
             self.latitude = latitude
             self.longitude = longitude
         } else {
-            // Fallback to decoding "lat" and "lng"
             self.latitude = try container.decode(Double.self, forKey: .lat)
             self.longitude = try container.decode(Double.self, forKey: .lng)
         }
