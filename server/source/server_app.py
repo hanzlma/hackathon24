@@ -44,7 +44,7 @@ def getRoutesStartCords(time: str, lat: str, lng:str, dest:str):
         start_result = getClosestStation(start_cords)
         dest_result = getClosestStation(Maps.ConvertAddressToCords(dest))
         
-        #IMPLEMENT SPF ALGORITHM
+        return Maps.GetRoute(Cords((start_result[2], start_result[3])), Cords((dest_result[2], dest_result[3])), time)
     except:  # noqa: E722
         return 500
 
@@ -54,10 +54,7 @@ def getRoutesStartNoCords(time: str, start: str, dest:str):
         start_result = getClosestStation(Maps.ConvertAddressToCords(start))
         dest_result = getClosestStation(Maps.ConvertAddressToCords(dest))
         
-        return Maps.CreateRoute(Cords((start_result[2], start_result[3])), Cords((dest_result[2], dest_result[3])), 'transit')
-        
-        #IMPLEMENT SPF ALGORITHM
-        
+        return Maps.GetRoute(Cords((start_result[2], start_result[3])), Cords((dest_result[2], dest_result[3])), time)
         
     except:  # noqa: E722
         return 500
