@@ -61,14 +61,19 @@ def processTrip(trip,line):
 
 if __name__ == "__main__":
     try:
+        normalend = 0
         while True:
-            linka = enterRoute()
-            try:
-                if not (linka[-1] in ["A","B"]):
+            if normalend == 0:
+                linka = enterRoute()
+                try:
+                    if not (linka[-1] in ["A","B"]):
+                        continue
+                except IndexError:
                     continue
-            except IndexError:
-                continue
-            line , direction = getLineAndDir(linka)
+                line , direction = getLineAndDir(linka)
+            else:
+                direction = direction ^1
+                normalend = 0
             trip,success = enterTrip()
             if not success:
                 continue
@@ -84,9 +89,10 @@ if __name__ == "__main__":
             while True:
                 stopID = db.getStopFromLine(lineID,direction,stopCount)
                 if not stopID:
+                    normalend = 1
                     break
                 print(stopID)
-                requested_stops = api.getStops(lineID,stopID)
+                requested_stops = api.getStops(lineID,stopID,stopCount)
                 stop,zone = db.getStopName(stopID)
                 if not zone:
                     zone =0
