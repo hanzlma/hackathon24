@@ -1,5 +1,8 @@
-import requests, zipfile, io
-import os, shutil
+from requests import get
+from zipfile import ZipFile
+import io
+from os import path, listdir, unlink, makedirs
+from shutil import rmtree
 import pandas as pd
 import mysql.connector
 import atexit
@@ -28,13 +31,13 @@ config = {
 }
 
 def clean_up():
-    for filename in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, filename)
+    for filename in listdir(folder_path):
+        file_path = path.join(folder_path, filename)
         try:
-            if (os.path.isfile(file_path) or os.path.islink(file_path)):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)
+            if (path.isfile(file_path) or path.islink(file_path)):
+                unlink(file_path)
+            elif path.isdir(file_path):
+                rmtree(file_path)
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
 
@@ -319,12 +322,12 @@ def parse_json(json):
 def update_database():
     atexit.register(clean_up)
 
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
+    if not path.exists(folder_path):
+        makedirs(folder_path)
 
     # Download the zip file
-    r = requests.get(zip_url)
-    z = zipfile.ZipFile(io.BytesIO(r.content))
+    r = get(zip_url)
+    z = ZipFile(io.BytesIO(r.content))
     z.extractall(folder_path)
 
     # Load the extracted files
