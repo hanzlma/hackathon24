@@ -6,4 +6,6 @@ class api:
 
     def getStops(self,trip,station):
         resp = requests.get(self.url+f"trip/nextstopsstate/trip={trip}&curr_stop={station}")
+        if not resp.json():
+            return []
         return resp.json()

@@ -18,9 +18,6 @@ def enterRoute():
         lcd.display(user, 2, "center")
         key = keypad.getKey()
         print(key)
-        if key =="C":
-            user+="R"
-            continue
         if key =="D":
             user+="S"
             continue
