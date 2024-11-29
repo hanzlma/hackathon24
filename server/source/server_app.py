@@ -73,6 +73,7 @@ def postUserRoute(routes: List[UserRouteModel]):
     }
     """
     setUserTrip(routes)
+    return {"success": True}
 
 
 @app.get('/trip/nextstopsstate/trip={trip}&curr_stop={stop}')
