@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from typing import List
 from gmaps import Maps, Cords
 from user_route import UserRouteModel
-from db import getClosestStation
+from db import getClosestStation, parse_json
+
 app = FastAPI()
 
 @app.get('/')
@@ -39,25 +40,21 @@ def getClosest(lat: str, lng:str):
     
 @app.get('/routes/time={time}&start_latitude={lat}&start_longitude={lng}&destination={dest}')
 def getRoutesStartCords(time: str, lat: str, lng:str, dest:str):
-    try:
-        start_cords = Cords((float(lat), float(lng)))
-        start_result = getClosestStation(start_cords)
-        dest_result = getClosestStation(Maps.ConvertAddressToCords(dest))
+    start_cords = Cords((float(lat), float(lng)))
+    start_result = getClosestStation(start_cords)
+    dest_result = getClosestStation(Maps.ConvertAddressToCords(dest))
         
-        return Maps.GetRoute(Cords((start_result[2], start_result[3])), Cords((dest_result[2], dest_result[3])), time)
-    except:  # noqa: E722
-        return 500
+    data = Maps.GetRoute(Cords((start_result[0][2], start_result[0][3])), Cords((dest_result[0][2], dest_result[0][3])), time)
+    return {"data": parse_json(data)}
+
 
 @app.get('/routes/time={time}&start={start}&destination={dest}')
 def getRoutesStartNoCords(time: str, start: str, dest:str):
-    try:
-        start_result = getClosestStation(Maps.ConvertAddressToCords(start))
-        dest_result = getClosestStation(Maps.ConvertAddressToCords(dest))
-        
-        return Maps.GetRoute(Cords((start_result[2], start_result[3])), Cords((dest_result[2], dest_result[3])), time)
-        
-    except:  # noqa: E722
-        return 500
+    start_result = getClosestStation(Maps.ConvertAddressToCords(start))
+    dest_result = getClosestStation(Maps.ConvertAddressToCords(dest))  
+    data = Maps.GetRoute(Cords((start_result[0][2], start_result[0][3])), Cords((dest_result[0][2], dest_result[0][3])), time)
+    return {"data": parse_json(data)}
+
     
 @app.post('/user/route')
 def postUserRoute(routes: List[UserRouteModel]):
@@ -65,9 +62,11 @@ def postUserRoute(routes: List[UserRouteModel]):
     input json structure:{
         "trips:"[
             {
-                "trip_id": str,
-                "start_stop_id": str,
-                "end_stop_id": str,
+                "line": str
+                "start_lat": str
+                "start_lng": str
+                "dest_lat": str
+                "dest_lng": str
             },
             ...
         ]
@@ -78,3 +77,4 @@ def postUserRoute(routes: List[UserRouteModel]):
 @app.get('/trip/nextstopsstate/trip={trip}&curr_stop={stop}')
 def getNextStopsState(trip: str, stop: str):
     pass
+

@@ -12,11 +12,26 @@ def getConnection() -> pymysql.connections.Connection:
         db="hackathon"
     )
     
+class Route:
+    def __init__(self, start, end, start_t, end_t, short_name):
+        self.start = start
+        self.end = end
+        self.start_t = start_t
+        self.end_t = end_t
+        self.short_name = short_name
+
+
+def parse_json(json):
+    routes = []
+    for step in json:
+        routes.append(Route(step['departure_stop']['name'], step['arrival_stop']['name'], step['departure_time'], step['arrival_time'], step['line']['short_name']))
+    return routes
+
 def getClosestStation(cords: Cords):
     connection = getConnection()
     with connection:
         with connection.cursor() as cursor:
-            sql = "SELECT id, name, latitude, longitude FROM hackathon.stops ORDER BY (latitude - %s) * (latitude - %s) + (longitude - %s) * (longitude - %s) LIMIT 3;"
+            sql = "SELECT id, name, latitude, longitude FROM hackathon.stops ORDER BY (latitude - %s) * (latitude - %s) + (longitude - %s) * (longitude - %s) LIMIT 1;"
             cursor.execute(sql, (cords.lat, cords.lat, cords.lng, cords.lng))
             result = cursor.fetchall()
             return result
