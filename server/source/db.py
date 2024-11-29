@@ -74,12 +74,13 @@ def nextStopsState(trip: str, stop: str, seq: int):
         with connection.cursor() as cursor:
             ret_stops = []
             stops = []
-            for i in range(3):
+            for i in range(1,3):
                 sql = 'SELECT stop_id FROM hackathon.stop_times WHERE trip_id = %s AND stop_sequence = %s;'
                 cursor.execute(sql, (trip, seq + i))
-                stops.append(cursor.fetchone())
+                stops.append(cursor.fetchall())
             for stop in stops:
                 sql = 'SELECT * FROM hackathon.user_trips WHERE trip_id = %s AND %s IN (dest_id, start_id);'
-                if len(cursor.execute(sql, (trip, stop).fetchall())) > 0:
+                cursor.execute(sql, (trip, stop))
+                if len(cursor.fetchall()) > 0:
                     ret_stops.append(stop)
             return ret_stops
