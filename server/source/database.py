@@ -3,10 +3,9 @@ from zipfile import ZipFile
 import io
 from os import path, listdir, unlink, makedirs
 from shutil import rmtree
-import pandas as pd
+from pandas import read_csv, read_json
 import mysql.connector
-import atexit
-import gmaps
+from atexit import register
 
 folder_path = './data/'
 zip_url = 'https://data.pid.cz/PID_GTFS.zip'
@@ -43,7 +42,7 @@ def clean_up():
 
 def get_stops():
     try:
-        data = pd.read_csv(stops_path, usecols=['stop_id', 'stop_name', 'stop_lat', 'stop_lon', 'zone_id', 'wheelchair_boarding', 'platform_code', 'asw_node_id', 'asw_stop_id'])
+        data = read_csv(stops_path, usecols=['stop_id', 'stop_name', 'stop_lat', 'stop_lon', 'zone_id', 'wheelchair_boarding', 'platform_code', 'asw_node_id', 'asw_stop_id'])
         return data
     except FileNotFoundError:
         print(f"The file at {stops_path} was not found.")
@@ -54,7 +53,7 @@ def get_stops():
 
 def get_routes():
     try:
-        data = pd.read_csv(routes_path, usecols=['route_id', 'route_short_name', 'route_type', 'is_night'])
+        data = read_csv(routes_path, usecols=['route_id', 'route_short_name', 'route_type', 'is_night'])
         return data
     except FileNotFoundError:
         print(f"The file at {routes_path} was not found.")
@@ -65,7 +64,7 @@ def get_routes():
 
 def get_route_stops():
     try:
-        data = pd.read_csv(route_stops_path, usecols=['route_id', 'stop_id', 'direction_id', 'stop_sequence'])
+        data = read_csv(route_stops_path, usecols=['route_id', 'stop_id', 'direction_id', 'stop_sequence'])
         return data
     except FileNotFoundError:
         print(f"The file at {route_stops_path} was not found.")
@@ -76,7 +75,7 @@ def get_route_stops():
 
 def get_stop_times():
     try:
-        data = pd.read_csv(stop_times_path, usecols=['trip_id', 'arrival_time', 'departure_time', 'stop_id', 'stop_sequence', 'pickup_type', 'drop_off_type', 'trip_operation_type', 'bikes_allowed'])
+        data = read_csv(stop_times_path, usecols=['trip_id', 'arrival_time', 'departure_time', 'stop_id', 'stop_sequence', 'pickup_type', 'drop_off_type', 'trip_operation_type', 'bikes_allowed'])
         return data
     except FileNotFoundError:
         print(f"The file at {stop_times_path} was not found.")
@@ -87,7 +86,7 @@ def get_stop_times():
 
 def get_trips():
     try:
-        data = pd.read_csv(trips_path, usecols=['trip_id', 'route_id', 'block_id', 'shape_id'])
+        data = read_csv(trips_path, usecols=['trip_id', 'route_id', 'block_id', 'shape_id'])
         return data
     except FileNotFoundError:
         print(f"The file at {trips_path} was not found.")
@@ -98,7 +97,7 @@ def get_trips():
 
 def get_transfers():
     try:
-        data = pd.read_csv(transfers_path, usecols=['from_stop_id', 'to_stop_id', 'transfer_type', 'min_transfer_time', 'max_waiting_time', 'from_trip_id', 'to_trip_id'])
+        data = read_csv(transfers_path, usecols=['from_stop_id', 'to_stop_id', 'transfer_type', 'min_transfer_time', 'max_waiting_time', 'from_trip_id', 'to_trip_id'])
         return data
     except FileNotFoundError:
         print(f"The file at {transfers_path} was not found.")
@@ -243,7 +242,7 @@ def import_transfers(dataframe):
 def import_stop_groups():
     print('Importing stop groups...')
     cursor_obj.execute('DELETE FROM stop_groups')
-    json = pd.read_json(json_url)
+    json = read_json(json_url)
     group_data = []
     for grop in json['stopGroups']:
         uniqueName = grop['uniqueName']
@@ -320,7 +319,7 @@ def parse_json(json):
 
 
 def update_database():
-    atexit.register(clean_up)
+    register(clean_up)
 
     if not path.exists(folder_path):
         makedirs(folder_path)
